@@ -1,31 +1,59 @@
 import React, { useState } from 'react';
+import { createUserMessage, createTeslaMessage } from './Messages.jsx';
 import PromptBox from './PromptBox.jsx';
 import ChatUI from './ChatUI.jsx';
 
 
 const LandingPage = () => {
-
-    const [userInput, setUserInput] = useState('');
+    const [messages, setMessages] = useState([]);  
     const [chatActive, setChatActive] = useState(false);
 
     console.log(" LandingPage is succsefully rendering ");
-    
-          
-    
-    const updateInputChange = (inp, messageTimes) => {
+
+    // Handles user prompts and
+    const handleUserPrompt = async (userPrompt) => {
+
+        const UserMessage = { message: userPrompt, sender: 'User' };
         
-        if (!userInput.trim()) return;
-
-        const UserPrompt = { role: 'User', content: inp };
-
-
-
-        setUserInput(inp);
+        setMessages(prev => [...prev, UserMessage]);
         setChatActive(true);
-    }
 
+        try {
+            
+            const response = await fetch('http://localhost:4000/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: userPrompt }),
+                message: UserMessage,
+                conversationhistory: messages
+            });
+
+            const data = await response.json();
+
+            const TeslaBotReply = {message: data.reply, sender: 'Nikola Tesla'};
+
+            setMessages(prev => [...prev, TeslaBotReply]);
+            
+
+        } catch (error) {
+            console.error('Error communicating with server:', error);
+        }
+    }; 
     
-    
+    const renderChatUI = () => {
+        if (chatActive) {
+            return <ChatUI />;
+        }
+    };
+
+    const suggestedQuestions = () => {
+        const questions = [
+            "What inspired your work on alternating current?",
+            "Can you explain the Tesla coil and its applications?",
+            "How did you come up with the idea for the radio?",        
+        ];
+
+    }
     
     return (
         <div style={{
@@ -57,11 +85,24 @@ const LandingPage = () => {
                 width: '200px' }}
             />
 
+            <h2>
+              Talk to Nikola Tesla
+            </h2>
+            <p>  
+                Ask me about my inventions, experiments, and vision for the future of electricity
+            </p>
+
+            <div>
+                <PromptBox onSubmit={handleUserPrompt} />
+                <ChatUI />
+            </div>
+
 
         </div>
 
 
     )
+
 }
 
 export default LandingPage;
