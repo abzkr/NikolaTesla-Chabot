@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
+import './components/LandingPage.jsx';
 import './App.css';
+import LandingPage from './components/LandingPage.jsx';
+
 
 function App() {
   const [status, setStatus] = useState('');
+
 
   useEffect(() => {
     // Test API connection
@@ -12,8 +16,11 @@ function App() {
       .catch(err => setStatus('Error connecting to server'));
   }, []);
 
+
+
   return (
     <div className="App">
+      <LandingPage />
       <h1>Nikola Tesla Chatbot</h1>
       <p>Server status: {status}</p>
     </div>
