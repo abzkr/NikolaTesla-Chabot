@@ -8,44 +8,39 @@ const LandingPage = () => {
     const [messages, setMessages] = useState([]);  
     const [chatActive, setChatActive] = useState(false);
 
-    console.log(" LandingPage is succsefully rendering ");
+    console.log(" LandingPage is succesfully rendering ");
 
     // Handles user prompts and
     const handleUserPrompt = async (userPrompt) => {
 
-        const UserMessage = { message: userPrompt, sender: 'User' };
-        
+        const UserMessage = createUserMessage(userPrompt);
         setMessages(prev => [...prev, UserMessage]);
         setChatActive(true);
 
         try {
-            
             const response = await fetch('http://localhost:4000/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: userPrompt }),
-                message: UserMessage,
-                conversationhistory: messages
+                body: JSON.stringify({ 
+                    prompt: userPrompt,
+                    conversationHistory: messages }),
             });
 
             const data = await response.json();
-
-            const TeslaBotReply = {message: data.reply, sender: 'Nikola Tesla'};
-
+            const TeslaBotReply = createTeslaMessage(data.reply);
             setMessages(prev => [...prev, TeslaBotReply]);
             
 
         } catch (error) {
             console.error('Error communicating with server:', error);
+
+            const errorMessage = createTeslaMessage("Sorry, I'm having trouble responding right now!");
+            setMessages(prev => [...prev, errorMessage]);
+    
         }
     }; 
     
-    const renderChatUI = () => {
-        if (chatActive) {
-            return <ChatUI />;
-        }
-    };
-
+   
     const suggestedQuestions = () => {
         const questions = [
             "What inspired your work on alternating current?",
@@ -56,7 +51,7 @@ const LandingPage = () => {
     }
     
     return (
-        <div style={{
+        <div className="MainPage" style={{
             backgroundColor: '#ffffff',
             minHeight: '100vh',
             display: 'flex',
@@ -66,37 +61,59 @@ const LandingPage = () => {
             padding: '20px'
         }}>
 
+            { /* Header with Nikola Tesla logo 
+                If chat is active, logo moves to the top left*/ }
+
+            
             <header>
                 <img src="nikola_logo.png" 
                 alt="Nikola Tesla Logo" 
                 style={{
-                height: '75px', 
-                borderRadius: '10px', 
-                marginBottom: '20px' }}
+                    position: 'fixed',
+                    top: '0',
+                    left: '0',
+                    right: '0',
+                    height: '60px', 
+                    padding: '15px 20px',
+                    zIndex: '1000',
+                    justifyContent: chatActive ? 'flex-start' : 'center',
+                    display: 'flex',
+                    alignItems: 'center',
+            }}
                 />
             </header>
 
+            { /* If the chat is not active, we show the "Tesla-Head" element with intro text */ } 
 
-            <img src="/nikola_head.png" 
+            {!chatActive && (
+            <>
+                 <img src="/nikola_head.png" 
                 alt="Nikola Tesla Chatbot" 
                 style={{ 
-                position : 'relative',
-                height: '200px', 
-                width: '200px' }}
-            />
+                    position : 'relative',
+                    height: '200px', 
+                    width: '200px' }}
+                />
+                <h2>
+                    Talk to Nikola Tesla
+                </h2>
+                <p>  
+                     Ask me about my inventions, experiments, and vision for the future of electricity
+                </p>
+            </>
 
-            <h2>
-              Talk to Nikola Tesla
-            </h2>
-            <p>  
-                Ask me about my inventions, experiments, and vision for the future of electricity
-            </p>
+            // Once chat is active, we hide the above "Tesla-Head" element and show the ChatUI component
+                
+            )}
+            {chatActive && (
+                <ChatUI/>
+            
+            )}
 
-            <div>
-                <PromptBox onSubmit={handleUserPrompt} />
-                <ChatUI />
-            </div>
+            { /* The PromptBox is always shown at all times for both the intial prompt and follow-up prompts */ }
 
+            
+            <PromptBox onSubmit={handleUserPrompt} />
 
         </div>
 

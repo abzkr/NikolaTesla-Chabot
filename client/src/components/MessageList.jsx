@@ -1,19 +1,16 @@
 import React, { useEffect, useRef } from 'react';
-import Messages from './Messages';
+import Message from './Message';  // Changed: import the component
 import './MessageList.css';
 
-// This component renders the list of chat messages
 const MessageList = ({ messages }) => {
   const messagesEndRef = useRef(null);
 
-  // will scroll to bottom of list automatically
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  // Scroll whenever the number of messages changes
   useEffect(() => {
     if (messages && messages.length > 0) {
       scrollToBottom();
@@ -22,27 +19,33 @@ const MessageList = ({ messages }) => {
 
   return (
     <div
-      className="message-list" //connects to CSS styling
-      role="log" // scrollable box for chat messages
-      aria-live="polite" // when content updates, screen readers are notified politely
-      aria-label="Nikola Tesla chat messages" // descriptive label for screen readers
+      className="message-list"
+      role="log"
+      aria-live="polite"
+      aria-label="Nikola Tesla chat messages"
+      style={{
+        height: '400px',
+        overflowY: 'auto',
+        border: '1px solid #ccc',
+        borderRadius: '10px',
+        padding: '20px',
+        backgroundColor: '#fafafa',
+        marginBottom: '20px'
+      }}
     >      
       {messages.length === 0 ? (
-        <p className="message-list__empty">
+        <p style={{ textAlign: 'center', color: '#999' }}>
           Ask Nikola Tesla your first question ⚡   
-        </p> // when no messages show this prompt
+        </p>
       ) : (
         messages.map((message) => (
-          <Messages key={message.id} message={message} />  // render each message
+          <Message key={message.id} message={message} />  // Changed: Message not Messages
         ))
       )}
 
-
-      {/* Invisible element at the end to scroll into view */}
       <div ref={messagesEndRef} />
     </div>
   );
 };
 
-// Export the MessageList component as the default export
 export default MessageList;

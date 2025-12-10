@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './components/LandingPage.jsx';
 import './App.css';
 import LandingPage from './components/LandingPage.jsx';
+import PromptBox from './components/PromptBox.jsx';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
   return (
     <div className="App">
       <LandingPage />
+      <PromptBox />
       <h1>Nikola Tesla Chatbot</h1>
       <p>Server status: {status}</p>
     </div>
