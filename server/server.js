@@ -1,22 +1,31 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const cors = require('cors');
-require('dotenv').config();
+const { processPrompt } = require('./engine/scriptingEngine');
+const { teslaPersona } = require('./persona/teslapersona');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 
-// Middleware
-app.use(cors({
-  origin: process.env.FRONTEND_URL
-}));
-app.use(express.json());
+app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(bodyParser.json());
 
-// Test route
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'Server is running!' });
+// API endpoint to handle chat messages - Basic error handling to make sure the prompt is provided, 
+// e.g Just incase
+
+app.post('/api/chat', async (req, res) => {
+    try {
+        const { prompt, conversationHistory } = req.body;
+
+        if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+
+        const response = await processPrompt(prompt, conversationHistory, teslaPersona);
+
+        res.json(response);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

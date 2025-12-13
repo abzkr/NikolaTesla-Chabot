@@ -1,4 +1,4 @@
-export const teslaPersona = {
+const teslaPersona = {
     persona: {
       name: "Nikola Tesla",
       description:
@@ -378,3 +378,5 @@ export const teslaPersona = {
       ],
     },
   };
+
+  module.exports = { teslaPersona };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createUserMessage, createTeslaMessage } from './Messages.jsx';
+import { createUserMessage, createTeslaMessage } from './Message.jsx';
 import PromptBox from './PromptBox.jsx';
 import ChatUI from './ChatUI.jsx';
 
@@ -7,6 +7,10 @@ import ChatUI from './ChatUI.jsx';
 const LandingPage = () => {
     const [messages, setMessages] = useState([]);  
     const [chatActive, setChatActive] = useState(false);
+
+
+
+    // Change conversation history to messages once you have succesfully connected to the backend
 
     console.log(" LandingPage is succesfully rendering ");
 
@@ -17,38 +21,34 @@ const LandingPage = () => {
         setMessages(prev => [...prev, UserMessage]);
         setChatActive(true);
 
+        // Build the conversation history including the just-created user message
+        const conversationHistory = [...messages, UserMessage];
+
         try {
-            const response = await fetch('http://localhost:4000/api/chat', {
+            const response = await fetch('http://localhost:5000/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    prompt: userPrompt,
-                    conversationHistory: messages }),
+                body: JSON.stringify({ prompt: userPrompt, conversationHistory }),
             });
 
+            // Initial server testing - We had a similar on landingpage - Here would be more appropriate
+            if (!response.ok) {
+                throw new Error(`Server responded with ${response.status}`);
+            }
+
             const data = await response.json();
-            const TeslaBotReply = createTeslaMessage(data.reply);
+            const TeslaBotReply = createTeslaMessage(data.reply || "(no reply)");
             setMessages(prev => [...prev, TeslaBotReply]);
-            
 
         } catch (error) {
             console.error('Error communicating with server:', error);
-
             const errorMessage = createTeslaMessage("Sorry, I'm having trouble responding right now!");
             setMessages(prev => [...prev, errorMessage]);
-    
         }
     }; 
     
    
-    const suggestedQuestions = () => {
-        const questions = [
-            "What inspired your work on alternating current?",
-            "Can you explain the Tesla coil and its applications?",
-            "How did you come up with the idea for the radio?",        
-        ];
-
-    }
+    // TODO: suggested questions helper (unused)
     
     return (
         <div className="MainPage" style={{
@@ -56,9 +56,10 @@ const LandingPage = () => {
             minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
+            justifyContent: chatActive ? 'flex-start' : 'center',
             alignItems: 'center',
-            padding: '20px'
+            padding: '20px',
+            paddingTop: chatActive ? '80px' : '20px'
         }}>
 
             { /* Header with Nikola Tesla logo 
@@ -83,7 +84,7 @@ const LandingPage = () => {
                 />
             </header>
 
-            { /* If the chat is not active, we show the "Tesla-Head" element with intro text */ } 
+            { /* If the chat is not active, we show the "Tesla-Head" element with intro text */ }
 
             {!chatActive && (
             <>
@@ -101,19 +102,28 @@ const LandingPage = () => {
                      Ask me about my inventions, experiments, and vision for the future of electricity
                 </p>
             </>
-
-            // Once chat is active, we hide the above "Tesla-Head" element and show the ChatUI component
-                
-            )}
-            {chatActive && (
-                <ChatUI/>
-            
             )}
 
-            { /* The PromptBox is always shown at all times for both the intial prompt and follow-up prompts */ }
-
-            
-            <PromptBox onSubmit={handleUserPrompt} />
+            { /* When chat is active show the ChatUI and position the PromptBox directly under it */ }
+            {chatActive ? (
+                <div style={{
+                    width: '700px',
+                    maxWidth: '95%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'stretch',
+                    gap: '12px',
+                    marginTop: '20px'
+                }}>
+                    <ChatUI messages={messages} />
+                    <PromptBox onSubmit={handleUserPrompt} />
+                </div>
+            ) : (
+                /* When chat is not active, keep the PromptBox below the intro */
+                <div style={{ width: '100%', marginTop: '20px' }}>
+                    <PromptBox onSubmit={handleUserPrompt} />
+                </div>
+            )}
 
         </div>
 

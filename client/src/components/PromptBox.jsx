@@ -6,8 +6,8 @@ import React, {useState} from "react";
 function PromptBox({ onSubmit }) {
     const [inputVal, setInputVal] = useState("");
 
-    function sendPrompt(prompt){
-        prompt.preventDefault();
+    function sendPrompt(e){
+        e.preventDefault();
         if (inputVal.trim() !== ""){
             onSubmit(inputVal);
             setInputVal("");
@@ -16,9 +16,9 @@ function PromptBox({ onSubmit }) {
     }
     
     return(
-        <form onsubmit={sendPrompt} >
+        <form onSubmit={sendPrompt} >
             <input value={inputVal} 
-            onChange={(prompt) => setInputVal(prompt.target.value)} 
+            onChange={(e) => setInputVal(e.target.value)} 
             placeholder="Ask me anything..."
             />
 
